@@ -1,24 +1,9 @@
 class Hyperkit < Formula
   desc "Lightweight virtualization hypervisor for macOS"
   homepage "https://github.com/moby/hyperkit"
-  url "https://github.com/moby/hyperkit.git",
-    :tag => "v0.20170425",
-    :revision => "a9c368bed6003bee11d2cf646ed1dcf3d350ec8c"
-
+  url "https://github.com/moby/hyperkit/archive/v0.20180403.tar.gz"
+  sha256 "e2739b034f20d9437696de48ace42600f55b7213292ec255032b2ef55f508297"
   head "https://github.com/moby/hyperkit.git"
-
-  bottle do
-    root_url "http://dl.bintray.com/markeissler/homebrew/bottles"
-    cellar :any_skip_relocation
-    sha256 "5cfa72e41bad9d812206a9850d7e6e63185ce1bffa0d1718beb5f09734d9bb29" => :sierra
-    sha256 "32162cf81ca23a27f97e0fe0727ecc6f3dcf179716ac77fb9fbc38883e3d114f" => :el_capitan
-    sha256 "0fb4cf0f9f8d81eb1be99d620b454ab14ec8680237f6938db095b032874e821d" => :yosemite
-  end
-
-  depends_on "ocaml" => :build
-  depends_on "opam" => :build
-  depends_on "aspcud" => :build
-  depends_on "libev" => :build
 
   resource "tinycorelinux" do
     url "https://dl.bintray.com/markeissler/homebrew/hyperkit-kernel/tinycorelinux_8.x.tar.gz"
@@ -26,38 +11,6 @@ class Hyperkit < Formula
   end
 
   def install
-    ENV["OPAMROOT"] = buildpath/"opamroot"
-    ENV["OPAMYES"] = "1"
-    system "opam", "init", "--no-setup"
-    system "opam", "install", "uri", "qcow.0.10.0", "qcow-tool",
-                   "mirage-block-unix.2.7.0", "conf-libev", "logs", "fmt",
-                   "mirage-unix", "prometheus-app"
-
-    # update the Makefile to set version to X.YYYYmmdd (sha1)
-    if build.head?
-      command = <<-CMD.undent
-        \\cd "#{buildpath}"; \
-        \\git log -1 --pretty=format:"vHEAD.%cd-%h" --date=short "master"
-      CMD
-      version_string = Utils.popen_read(command.to_s).chomp
-      version, sha1 = version_string.split("-", 3).join("").split("-")
-    else
-      # grab version and sha1 from stable resource specs
-      version = stable.specs[:tag][0..-1]
-      sha1 = stable.specs[:revision][0..6]
-    end
-
-    if version.nil? || version.empty? || sha1.nil? || sha1.empty?
-      odie "Couldn't figure out which version we're building!"
-    end
-
-    quiet_system <<-CMD.undent
-      \\sed -i".bak" \
-      -e "s/GIT_VERSION[\ ]*:=.*/GIT_VERSION := '#{version} (#{sha1})'/g" \
-      -e "s/GIT_VERSION_SHA1[\ ]:=.*/GIT_VERSION_SHA1 := '#{sha1}'/g" \
-      "#{buildpath}/Makefile"
-    CMD
-
     system "make"
 
     bin.install "build/hyperkit"
