@@ -4,15 +4,15 @@ class Hyperkit < Formula
   url "https://github.com/moby/hyperkit/archive/v0.20180403.tar.gz"
   sha256 "e2739b034f20d9437696de48ace42600f55b7213292ec255032b2ef55f508297"
 
-  resource "tinycorelinux" do
-    url "https://dl.bintray.com/markeissler/homebrew/hyperkit-kernel/tinycorelinux_8.x.tar.gz"
-    sha256 "560c1d2d3a0f12f9b1200eec57ca5c1d107cf4823d3880e09505fcd9cd39141a"
-  end
-
   depends_on "ocaml" => :build
   depends_on "opam" => :build
   depends_on :xcode => ["9.0", :build]
   depends_on "libev"
+
+  resource "tinycorelinux" do
+    url "https://dl.bintray.com/markeissler/homebrew/hyperkit-kernel/tinycorelinux_8.x.tar.gz"
+    sha256 "560c1d2d3a0f12f9b1200eec57ca5c1d107cf4823d3880e09505fcd9cd39141a"
+  end
 
   def install
     system "opam", "init", "--no-setup"
